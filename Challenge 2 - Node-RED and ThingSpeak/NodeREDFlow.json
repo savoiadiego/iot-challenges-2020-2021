@@ -1,0 +1,320 @@
+[
+    {
+        "id": "4aae8210.dab964",
+        "type": "tab",
+        "label": "Challenge 2",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "4a0ea065.077dd",
+        "type": "inject",
+        "z": "4aae8210.dab964",
+        "name": "Start",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 110,
+        "y": 100,
+        "wires": [
+            [
+                "c74858d7.b9a728"
+            ]
+        ]
+    },
+    {
+        "id": "c74858d7.b9a728",
+        "type": "file in",
+        "z": "4aae8210.dab964",
+        "name": "Read CSV line",
+        "filename": "/home/user/IoT2021/lesson4/traffic.csv",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "x": 500,
+        "y": 100,
+        "wires": [
+            [
+                "36495df.60a9c22"
+            ]
+        ]
+    },
+    {
+        "id": "36495df.60a9c22",
+        "type": "csv",
+        "z": "4aae8210.dab964",
+        "name": "Convert CSV line into JS object",
+        "sep": ",",
+        "hdrin": "",
+        "hdrout": "",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "x": 990,
+        "y": 100,
+        "wires": [
+            [
+                "d1de0ebc.a4c4a8"
+            ]
+        ]
+    },
+    {
+        "id": "3703591d.13bb86",
+        "type": "switch",
+        "z": "4aae8210.dab964",
+        "name": "Topic division",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "factory/department1/section1/plc",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "factory/department3/section3/plc",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "factory/department1/section1/hydraulic_valve",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "factory/department3/section3/hydraulic_valve",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 140,
+        "y": 400,
+        "wires": [
+            [
+                "fb1291e4.89e138"
+            ],
+            [
+                "550b3f95.f01898"
+            ],
+            [
+                "ea43d2d1.309c58"
+            ],
+            [
+                "8b751816.83c82"
+            ]
+        ]
+    },
+    {
+        "id": "fb1291e4.89e138",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Take and convert hex payload",
+        "func": "// Function to convert a hexadecimal string into an ASCII string\nfunction hex_to_ascii(str1)\n {\n\tvar hex  = str1.toString();\n\tvar str = '';\n\tfor (var n = 0; n < hex.length; n += 2) {\n\t\tstr += String.fromCharCode(parseInt(hex.substr(n, 2), 16));\n\t}\n\treturn str;\n }\n\n// Taking the hashed payload (which starts 2 characters after the closing square bracket of the topic)\nvar content = msg.payload.substring(msg.payload.lastIndexOf(']')+2);\ncontent = hex_to_ascii(content)\nmsg.payload = content;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 340,
+        "wires": [
+            [
+                "c0ed1044.027fc8"
+            ]
+        ]
+    },
+    {
+        "id": "c0ed1044.027fc8",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Prepare MQTT message for field1",
+        "func": "var CHANNEL_ID = \"1358319\";\nvar API_KEY = \"S4QMUJZCLCYC9S22\";\n\n// Taking only the \"value\" field of the payload (which starts 8 charaters after the \"v\" of \"value\")\nvar content = msg.payload.substring(msg.payload.lastIndexOf(\"value\")+8);\nvar field1 = parseInt(content, 10);\n\nmsg.topic = \"channels/\"+CHANNEL_ID+\"/publish/\"+API_KEY;\n\nmsg.payload = \"field1=\"+field1+\"&status=MQTTPUBLISH\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 940,
+        "y": 360,
+        "wires": [
+            [
+                "3001ec3a.3c29f4"
+            ]
+        ]
+    },
+    {
+        "id": "8b751816.83c82",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Take and convert hex payload",
+        "func": "function hex_to_ascii(str1)\n {\n\tvar hex  = str1.toString();\n\tvar str = '';\n\tfor (var n = 0; n < hex.length; n += 2) {\n\t\tstr += String.fromCharCode(parseInt(hex.substr(n, 2), 16));\n\t}\n\treturn str;\n }\n\nvar content = msg.payload.substring(msg.payload.lastIndexOf(']')+2);\ncontent = hex_to_ascii(content)\nmsg.payload = content;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 460,
+        "wires": [
+            [
+                "3fba510d.3cb5a6"
+            ]
+        ]
+    },
+    {
+        "id": "ea43d2d1.309c58",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Take and convert hex payload",
+        "func": "function hex_to_ascii(str1)\n {\n\tvar hex  = str1.toString();\n\tvar str = '';\n\tfor (var n = 0; n < hex.length; n += 2) {\n\t\tstr += String.fromCharCode(parseInt(hex.substr(n, 2), 16));\n\t}\n\treturn str;\n }\n\nvar content = msg.payload.substring(msg.payload.lastIndexOf(']')+2);\ncontent = hex_to_ascii(content)\nmsg.payload = content;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 420,
+        "wires": [
+            [
+                "3fba510d.3cb5a6"
+            ]
+        ]
+    },
+    {
+        "id": "550b3f95.f01898",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Take and convert hex payload",
+        "func": "function hex_to_ascii(str1)\n {\n\tvar hex  = str1.toString();\n\tvar str = '';\n\tfor (var n = 0; n < hex.length; n += 2) {\n\t\tstr += String.fromCharCode(parseInt(hex.substr(n, 2), 16));\n\t}\n\treturn str;\n }\n\nvar content = msg.payload.substring(msg.payload.lastIndexOf(']')+2);\ncontent = hex_to_ascii(content)\nmsg.payload = content;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 380,
+        "wires": [
+            [
+                "c0ed1044.027fc8"
+            ]
+        ]
+    },
+    {
+        "id": "3fba510d.3cb5a6",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Prepare MQTT message for field2",
+        "func": "var CHANNEL_ID = \"1358319\";\nvar API_KEY = \"S4QMUJZCLCYC9S22\";\n\n// Taking only the \"value\" field of the payload (which starts 8 charaters after the \"v\" of \"value\")\nvar content = msg.payload.substring(msg.payload.lastIndexOf(\"value\")+8);\nvar field2 = parseInt(content, 10);\n\nmsg.topic = \"channels/\"+CHANNEL_ID+\"/publish/\"+API_KEY;\n\nmsg.payload = \"field2=\"+field2+\"&status=MQTTPUBLISH\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 940,
+        "y": 440,
+        "wires": [
+            [
+                "3001ec3a.3c29f4"
+            ]
+        ]
+    },
+    {
+        "id": "d73da61c.bb5278",
+        "type": "mqtt out",
+        "z": "4aae8210.dab964",
+        "name": "Send MQTT message",
+        "topic": "",
+        "qos": "0",
+        "retain": "",
+        "broker": "b0af1ae4.3e3508",
+        "x": 1400,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "3001ec3a.3c29f4",
+        "type": "delay",
+        "z": "4aae8210.dab964",
+        "name": "Rate limiter",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 1190,
+        "y": 400,
+        "wires": [
+            [
+                "d73da61c.bb5278"
+            ]
+        ]
+    },
+    {
+        "id": "9333a1cd.d4afe",
+        "type": "split",
+        "z": "4aae8210.dab964",
+        "name": "Topic+Hex payload",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 1030,
+        "y": 220,
+        "wires": [
+            [
+                "3703591d.13bb86"
+            ]
+        ]
+    },
+    {
+        "id": "d1de0ebc.a4c4a8",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Publish Messages and hex payloads",
+        "func": "// Deleting the useless columns of the CSV line (= items in the JS object)\n// Keeping only items that contain \"Publish Message\" or a hashed payload (which starts with \"7b\")\n// In particular, hashed payloads are kept only if at least one \"Publish Message\" is found in the CSV line\n\nvar found = false;\n\nfor (var item in msg.payload) {\n    if (msg.payload[item].includes(\"Publish Message\")){\n         found = true;\n         continue;\n     }\n    else if (found && msg.payload[item].includes(\"7b\"))\n        continue;\n    delete msg.payload[item];\n}\n\n// Return the message only if it contains at least one item\nif (Object.keys(msg.payload).length > 0)\n    return msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 210,
+        "y": 220,
+        "wires": [
+            [
+                "722bf701.481f"
+            ]
+        ]
+    },
+    {
+        "id": "722bf701.481f",
+        "type": "function",
+        "z": "4aae8210.dab964",
+        "name": "Useful topics and corresponding hex payloads",
+        "func": "// Function to find the first hashed payload on the considered JS object (= CSV line)\n// Once it is saved in the \"hex\" variable, it is replaced with an empty string so that we don't find it again\nfunction find_hex_payload() {\n\tfor(var item2 in msg.payload) {\n\t    if(msg.payload[item2].includes(\"7b\")) {\n\t        var hex = msg.payload[item2].substring(msg.payload[item2].indexOf(\"7b\"));\n\t        msg.payload[item2] = msg.payload[item2].replace(hex, \"\");\n\t        break;\n\t    }\n\t}\n\treturn hex;\n }\n\n// Saving the useful topics in variables for simplicity\nvar topic1 = \"[factory/department1/section1/plc]\";\nvar topic2 = \"[factory/department3/section3/plc]\";\nvar topic3 = \"[factory/department1/section1/hydraulic_valve]\";\nvar topic4 = \"[factory/department3/section3/hydraulic_valve]\";\n\n// For each item in the JS object (= column in the CSV line)\n// If we find a useful topic, we call the find_hex_payload() function to look for the corresponding hashed payload\n// We append the topic and the corresponding hashed payload in the final \"result\" array\n// Then, we replace the topic with an empty string so that we don't find it again\n// If instead we find a useless topic, we look for the corresponding payload and we discard it\n\nvar result = []\n\nfor(var item in msg.payload) {\n    if(msg.payload[item].includes(topic1)) {\n        hex1 = find_hex_payload();\n        if(hex1) {\n            str1 = topic1 + \" \" + hex1;\n            result.push(str1);\n        }\n        msg.payload[item] = msg.payload[item].replace(topic1, \"\");\n    }\n    else if(msg.payload[item].includes(topic2)) {\n        hex2 = find_hex_payload();\n        if(hex2) {\n            str2 = topic2 + \" \" + hex2;\n            result.push(str2);\n        }\n        msg.payload[item] = msg.payload[item].replace(topic2, \"\");\n    }\n    else if(msg.payload[item].includes(topic3)) {\n        hex3 = find_hex_payload();\n        if(hex3) {\n            str3 = topic3 + \" \" + hex3;\n            result.push(str3);\n        }\n        msg.payload[item] = msg.payload[item].replace(topic3, \"\");\n    }\n    else if(msg.payload[item].includes(topic4)) {\n        hex4 = find_hex_payload();\n        if(hex4) {\n            str4 = topic4 + \" \" + hex4;\n            result.push(str4);\n        }\n        msg.payload[item] = msg.payload[item].replace(topic4, \"\");\n    }\n    else {\n        _ = find_hex_payload();     // if we are on a useless publish, we have to delete its payload, since it is useless\n    }\n}\n\n// Returning the message (containing the result array, composed by topic + hashed payload in each position)\n// only if at least one useful topic has been found\nmsg.payload = result;\nif (msg.payload.length > 0)\n    return msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 640,
+        "y": 220,
+        "wires": [
+            [
+                "9333a1cd.d4afe"
+            ]
+        ]
+    },
+    {
+        "id": "b0af1ae4.3e3508",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "",
+        "broker": "mqtt.thingspeak.com",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    }
+]
